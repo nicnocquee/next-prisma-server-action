@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model answers {
+  id         String    @id
+  answer_id  String
+  code       String
+  answer_set String
+  names      Json
+  status     Int       @default(0)
+  iscorrect  Boolean
+  number     String    @default("")
+  questionId String
+  flavorId   String
+  flavors    flavors   @relation(fields: [flavorId], references: [id], onDelete: Cascade)
+  questions  questions @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model categories {
+  id             String           @id
+  code           String
+  sort           String
+  subtitles      Json
+  names          Json
+  status         Int              @default(0)
+  flavour        String?
+  questions      questions[]
+  set_categories set_categories[]
+}
+
+model flavors {
+  id                 String          @id
+  country            String
+  app_id             String
+  name               String          @unique
+  types              String[]
+  topic              String?
+  languages          String[]
+  default_language   String?
+  default_set        String?
+  sets               String[]
+  contest            Boolean?
+  difficulty         Boolean?
+  test               Json
+  voucherify         Json
+  single_choice      Boolean?
+  title              Json
+  loginTitle         Json
+  description        Json
+  image              String?
+  price              Json
+  enabled            Boolean         @default(false)
+  meta_title         Json
+  meta_keywords      Json
+  meta_description   Json
+  is_default_flavour Boolean         @default(false)
+  gtag_conversion    Json
+  display_percentage Boolean?
+  sort               Int?
+  isCoachingEnabled  Boolean         @default(false)
+  payrex             String?
+  payrexx            Json
+  answers            answers[]
+  learning_sets      learning_sets[]
+  questions          questions[]
+  vouchers           vouchers[]
+}
+
+model learning_sets {
+  id             String           @id
+  code           String
+  sort           String
+  names          Json
+  status         Int              @default(0)
+  count          Int
+  points         Int
+  total          Int
+  errorpoints    Int
+  flavorId       String
+  flavors        flavors          @relation(fields: [flavorId], references: [id])
+  set_categories set_categories[]
+}
+
+model notes {
+  id      String   @id
+  note    String
+  created DateTime @default(now())
+  userId  String
+  users   users    @relation(fields: [userId], references: [id])
+}
+
+model questions {
+  id               String     @id
+  code             String
+  question_sets    String[]
+  names            Json
+  status           Int        @default(0)
+  referencecode    String
+  texts            Json
+  typecode         String
+  difficulty       Int?
+  percentage       Float?
+  points_possible  Int?
+  is_number_answer Boolean?
+  categoryId       String
+  flavorId         String
+  answers          answers[]
+  categories       categories @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  flavors          flavors    @relation(fields: [flavorId], references: [id], onDelete: Cascade)
+}
+
+model set_categories {
+  id             String        @id
+  points         Int
+  countQuestions Int
+  countImages    Int
+  countDifficult Int
+  countSimple    Int
+  countMedium    Int
+  limit          Int
+  learningSetId  String
+  categoryId     String
+  categories     categories    @relation(fields: [categoryId], references: [id])
+  learning_sets  learning_sets @relation(fields: [learningSetId], references: [id])
+}
+
+model users {
+  id            String     @id
+  email         String?    @unique
+  ip            String[]
+  token         String?
+  created       DateTime   @default(now())
+  updated       DateTime   @default(now())
+  name          String?
+  language      String?
+  welcomeSent   Boolean    @default(false)
+  verifyCode    String?
+  verifyExpire  DateTime?
+  role          String     @default("normal")
+  password      String?
+  activeFlavour String?
+  activeSet     String?
+  disabled      Boolean    @default(false)
+  commitHash    String?
+  notes         notes[]
+  vouchers      vouchers[]
+}
+
+model vouchers {
+  id                 String    @id
+  code               String    @unique
+  ip                 String?
+  expiry             DateTime?
+  created            DateTime  @default(now())
+  updated            DateTime  @default(now())
+  validUntil         DateTime?
+  webPurchase        Boolean   @default(false)
+  price              Int
+  chargeId           String?
+  balanceTransaction String?
+  transactionID      String?
+  transactionUUID    String?
+  paymentGateway     String    @default("stripe")
+  paymentProvider    String    @default("stripe")
+  commitHash         String?
+  disabled           Boolean   @default(false)
+  notes              String?
+  device             String?
+  userId             String
+  flavorId           String
+  flavors            flavors   @relation(fields: [flavorId], references: [id])
+  users              users     @relation(fields: [userId], references: [id])
+}
