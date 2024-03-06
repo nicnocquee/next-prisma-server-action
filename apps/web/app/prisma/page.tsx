@@ -1,5 +1,5 @@
 import { prisma } from "database";
-import FlavourComponent from "./flavour";
+import PrismaContent from "./content";
 
 export default async function Page() {
   const flavours = await prisma.flavors.findMany({});
@@ -13,9 +13,7 @@ export default async function Page() {
         alignItems: "center",
       }}
     >
-      {flavours.map((f) => {
-        return <FlavourComponent key={f.id} name={f.name} id={f.id} />;
-      })}
+      <PrismaContent flavours={flavours} />
     </div>
   );
 }
